@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html ng-app="gitmap">
+  <head>
+    <title>gitmap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+    <script src="{{ url_for('static', filename='js/underscore.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui-bootstrap-custom-0.4.0.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui-bootstrap-custom-tpls-0.4.0.js') }}"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="header"></div>
+      <div class="site">
+	<div class="container">
+	  <h1>gitmap.net</h1><h5><a class="pull-right" href="/logout">logout</a>
+	  <ul><h3>your organizations</h3>
+	    {% for org in orgs %}
+	      <li><h4><a href="/app/{{ org.login }}">{{ org.login }}</a></h4></li>
+	    {% endfor %}
+	  </ul>
+	</div>
+      </div>
+    </div>
+    <!-- JavaScript plugins (requires jQuery) -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
+    
+    <!-- Optionally enable responsive features in IE8 -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/respond.js"></script>
+  </body>
+</html>

@@ -1,0 +1,99 @@
+body {
+    min-width: 1020px;
+    color: #333333;
+    background-color: #fff;
+}
+
+.list-group-item.milestone-list-item {
+    padding-left: 75px;
+    color: #000;
+}
+
+.list-group-item.milestone-list-item .title {
+    font-size: large;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 300px;
+}
+
+.days-left {
+    font-size: xx-large;
+    position: absolute;
+    left: 15px;
+    top: 1px;
+}
+
+.small {
+    font-size: small;
+}
+
+.milestone-progress {
+    float: right;
+    width: 200px;
+    position: relative;
+}
+
+.milestone-progress.small {
+    margin-top: -4px;
+}
+
+.days-left.small {
+    top: 6px;
+}
+
+.milestone-progress .progress {
+    height: 25px;
+    margin-bottom: 0px;
+}
+
+.milestone-progress .percent-label {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    color: #fff;
+    text-shadow: 0 0 2px rgba(0,0,0,0.7);
+    font-weight: bold;
+}
+
+.milestone-list-item .badge.tag {
+    margin-right: 2px;
+}
+
+.milestone-list-item .details {
+    margin: 10px 0 5px 0;
+}
+
+.events .event:first-child {
+    border-top: none;
+}
+
+.event {
+    padding: 3px 0 1em 45px;
+    overflow: hidden;
+    position: relative;
+    border-top: 1px solid #f1f1f1;
+}
+
+.events .event .time {
+    font-size: 12px;
+    color: #bbb;
+}
+
+.list-group-item.header {
+    min-height: 28px;
+    line-height: 1;
+    background-color: #eaeaea;
+    background-image: -moz-linear-gradient(#fafafa, #eaeaea);
+    background-image: -webkit-linear-gradient(#fafafa, #eaeaea);
+    background-image: linear-gradient(#fafafa, #eaeaea);
+    background-repeat: repeat-x;
+    border: 1px solid #d5d5d5;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    font-weight: bold;
+}
+
+.container {
+    padding-top: 5px;
+}
