@@ -3,16 +3,15 @@ from flask import Flask, request, render_template, redirect, session, url_for
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.secret_key = 'chubby bunny'
+app.secret_key = os.environ['SESSION_SECRET']
 
 gh_auth_url = ("https://github.com/login/oauth/authorize"
-               "?client_id=5be934fea7b1fc0daed9"
-               "&scope=repo"
-               )
+               "?client_id=" + os.environ['GH_CLIENT_KEY'] + ""
+               "&scope=repo")
 
 gh_access_token_url = ("https://github.com/login/oauth/access_token"
-                       "?client_id=5be934fea7b1fc0daed9"
-                       "&client_secret=3f7887d98e445e6d837b3575a814a615cc3c348e"
+                       "?client_id=" + os.environ['GH_CLIENT_KEY'] + ""
+                       "&client_secret=" + os.environ['GH_CLIENT_SECRET'] + ""
                        "&code={0}")
 
 # logging helper
@@ -42,8 +41,8 @@ def _flatten(l, fn, val=[]):
 def org_redirect():
     r = make_request('https://api.github.com/user/orgs')
     orgs = r.json()
-    if len(orgs) == 1:
-        return redirect('/app/' + orgs.pop()['login'])
+    if r.status_code == 200 and len(orgs) == 1:
+        return redirect('/app/' + orgs.pop(-1)['login'])
     else:
         return redirect('/orgs')
 
