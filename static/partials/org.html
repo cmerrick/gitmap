@@ -24,9 +24,9 @@
 <h3>{{ orgname }} Roadmap</h3>
 <ul id="milestones-upcoming" class="list-group milestones scheduled">
   <li class="list-group-item header small"><div class="days-left small">days left</div><div class="milestone-progress small">progress</div></li>
-  <a ng-click="toggleDetails(milestone)" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!!'} | orderBy:'due_on'">
+  <li ng-click="toggleDetails(milestone)" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!!'} | orderBy:'due_on'">
     <div ng-include src="'template-ms-short.html'"></div>
-  </a>
+  </li>
 </ul>
 
 <ul id="milestones-unscheduled" class="list-group milestone unscheduled">
