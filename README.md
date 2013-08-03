@@ -1,4 +1,4 @@
-#werminal#
+#gitmap#
 
 roadmaps for github organizations
 
