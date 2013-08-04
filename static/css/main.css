@@ -9,6 +9,11 @@ body {
     color: #000;
 }
 
+.milestone-list-item:hover {
+    background-color: #f4f4ff;
+}
+
+
 .list-group-item.milestone-list-item .title {
     font-size: large;
     white-space: nowrap;

@@ -13,9 +13,10 @@
   <div ng-show="milestone.showDetails" class="details">
     <p class="ms-description-short">{{ milestone.description }}</p>
     <div class="events">
-      <div class="event" ng-repeat="event in milestone.events | orderBy:'created_at' | limitTo:5 ">
-	<div class="time">{{ event.created_at | momentFromNow }} by {{ event.actor.login }}</div>
-	<span><a href="{{ event.issue.html_url }}">{{ event.issue.title }}</a></span>
+      <div class="event" ng-repeat="event in milestone.event_summaries | orderBy:'-last_modified' | limitTo:5 ">
+	<div class="time">{{ event.last_modified | momentFromNow }}
+	by [ <var ng-repeat="user in event.users">{{ user.login }} </var>]</div>
+	<span><a href="{{ event.url }}">{{ event.title }}</a></span>
       </div>
     </div>
   </div>
