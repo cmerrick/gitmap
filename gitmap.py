@@ -1,9 +1,20 @@
-import os, sys, requests, flask, json, urlparse
-from flask import Flask, request, render_template, redirect, session, url_for
+import os, sys, requests, json, urlparse
+from hashlib import md5
+from flask import Flask, Response, request, render_template, redirect, session, url_for
+
 
 app = Flask(__name__)
+VERSION = 0.1 #hack for the cache buster
 app.config['DEBUG'] = True
 app.secret_key = os.environ['SESSION_SECRET']
+
+
+ASSET_REVISION = md5(str(VERSION)).hexdigest()[:14]
+
+@app.url_defaults
+def static_cache_buster(endpoint, values):
+    if endpoint == 'static':
+        values['_v'] = ASSET_REVISION
 
 gh_auth_url = ("https://github.com/login/oauth/authorize"
                "?client_id=" + os.environ['GH_CLIENT_KEY'] + ""
@@ -90,9 +101,9 @@ def milestones_json(orgname):
         return out
 
     milestones = flattened([get_milestones(repo) for repo in r.json()])
-    return flask.Response(json.dumps([m for m in milestones if len(m)]), mimetype="application/json")
+    return Response(json.dumps([m for m in milestones if len(m)]), mimetype="application/json")
 
 @app.route('/api/repos/<orgname>/<reponame>/issues/events.json')
 def milestone_json(orgname, reponame):
     r = make_request('https://api.github.com/repos/{0}/{1}/issues/events'.format(orgname, reponame))
-    return flask.Response(json.dumps(r.json()), mimetype="application/json")
+    return Response(json.dumps(r.json()), mimetype="application/json")

@@ -1,1 +1,1 @@
-web: gunicorn hubmap:app
+web: gunicorn gitmap:app
