@@ -19,7 +19,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 300px;
+    min-width: 150px;
 }
 
 .days-left {
@@ -39,7 +39,19 @@ body {
     position: relative;
 }
 
+.milestone-activity {
+    float: right;
+    width: 150px;
+    height: 20px;
+    margin-right: 10px;
+    position: relative;
+}
+
 .milestone-progress.small {
+    margin-top: -4px;
+}
+
+.milestone-activity.small {
     margin-top: -4px;
 }
 
@@ -48,7 +60,7 @@ body {
 }
 
 .milestone-progress .progress {
-    height: 25px;
+    height: 20px;
     margin-bottom: 0px;
 }
 
@@ -58,7 +70,7 @@ body {
     left: 4px;
     color: #fff;
     text-shadow: 0 0 2px rgba(0,0,0,0.7);
-    font-weight: bold;
+    font-size: 12px;
 }
 
 .milestone-list-item .badge.tag {
@@ -101,4 +113,12 @@ body {
 
 .container {
     padding-top: 5px;
+}
+
+.loading {
+    margin: 5px;
+}
+
+rect.rect {
+    fill: #070;
 }

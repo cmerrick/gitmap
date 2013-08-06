@@ -4,7 +4,7 @@ from flask import Flask, Response, request, render_template, redirect, session, 
 
 
 app = Flask(__name__)
-VERSION = 0.1 #hack for the cache buster
+VERSION = 1 #hack for the cache buster
 app.config['DEBUG'] = True
 app.secret_key = os.environ['SESSION_SECRET']
 

@@ -4,6 +4,10 @@
     <progress percent="progress(milestone)"></progress>
     <span class="percent-label">{{ progress(milestone) | number:0 }}%</span>
   </div>
+  <div class="milestone-activity" tooltip-placement="left" tooltip-popup-delay="200"
+       tooltip="today">
+    <activity-grid nodes="milestone.past7_activity" />
+  </div>
   <div class="title">
     <span class="badge tag" ng-repeat="tag in parseBracketTags(milestone.title)">
       {{tag}}
@@ -24,15 +28,21 @@
 
 <h3>{{ orgname }} Roadmap</h3>
 <ul id="milestones-upcoming" class="list-group milestones scheduled">
-  <li class="list-group-item header small"><div class="days-left small">days left</div><div class="milestone-progress small">progress</div></li>
-  <li ng-click="toggleDetails(milestone)" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!!'} | orderBy:'due_on'">
+  <li class="list-group-item header small">
+    <div class="days-left small">days left</div>
+    <div class="milestone-progress small">progress</div>
+    <div class="milestone-activity small">7d activity</div>
+  </li>
+  <div class="loading" ng-show="!milestonesLoaded">Loading...</div>
+  <li ng-show="milestonesLoaded" ng-click="toggleDetails(milestone)" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!!'} | orderBy:'due_on'">
     <div ng-include src="'template-ms-short.html'"></div>
   </li>
 </ul>
 
 <ul id="milestones-unscheduled" class="list-group milestone unscheduled">
-  <li class="list-group-item header">Unscheduled Milestones</div>
-  <li href="" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!'} | orderBy:'due_on'">
+  <li class="list-group-item header">Unscheduled Milestones</li>
+  <div class="loading" ng-show="!milestonesLoaded">Loading...</div>
+  <li ng-show="milestonesLoaded" href="" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!'} | orderBy:'due_on'">
     <div ng-include src="'template-ms-short.html'"></div>
-  </a>
+  </li>
 </div>

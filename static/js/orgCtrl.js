@@ -23,17 +23,71 @@ var app = angular.module('gitmap', ['ui.bootstrap'])
 	    now = moment();
 	    return x ? x.diff(now, 'days') : null;
 	};
+    }).directive('activityGrid', function() {
+        return {
+            restrict: 'E',
+            scope: {
+                nodes: "=nodes"
+            },
+            link: function(scope, elem, attrs) {
+                scope.$watch('nodes', function(nodes) {
+                    if(nodes) {
+                        var nodeData = scope.nodes;
+                        var selector = elem[0];
+                        
+                        var width = 150,
+                	height = 30,
+                	padding = .2;
+
+                        var rectGrid = d3.layout.grid()
+                            .bands()
+                            .size([width, height])
+                            .padding([padding, padding])
+                            .rows(1)
+                            .cols(7);
+                        
+                        var svg = d3.select(selector).append("svg")
+                            .attr({
+                                width: width,
+                                height: height
+                            });
+                        
+                        var renderRect = function(rectSelector, classNames) {
+                            rectSelector.append("rect")
+                                .attr("class", classNames)
+                                .attr("width", rectGrid.nodeSize()[0])
+                                .attr("height", rectGrid.nodeSize()[0])
+                                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+                                .style("stroke-width", 1)
+                                .style("stroke", "black")
+                                .style("fill-opacity", function(d) { return d.value ? .5 : 0; });
+                        };
+                        
+                        renderRect(svg.selectAll(".rect").data(rectGrid(nodeData)).enter(), "rect discussion");
+                    }
+                });
+            }
+        }
     });
 
 function OrgCtrl($scope, $http, $routeParams) {
     $scope.milestones = [];
+    $scope.milestonesLoaded = false;
     $scope.orgname = $routeParams.orgname;
+    $scope.eventsByIssue = [];
+
+    var _past7 = [];
+    var _current = moment().subtract('d', 7);
+    while((_current = _current.add('d', 1)) < moment()) {
+        _past7.push(moment(_current).milliseconds(0).seconds(0).minutes(0).hours(0));
+    }
     
     $http({
 	method: 'GET',
 	url: "/api/org/" + $scope.orgname + "/milestones.json"
     }).success(function(data, status) {
 	$scope.milestones = data;
+        $scope.milestonesLoaded = true;
 	$scope.getMilestoneEvents();
     });
 
@@ -41,7 +95,7 @@ function OrgCtrl($scope, $http, $routeParams) {
 	var repos = _.chain($scope.milestones)
 	    .map(function(milestone) { return milestone && milestone.repo && milestone.repo.name; })
 	    .uniq()
-	    .filter(function(x) { return x; }); //remove undefined's
+	    .compact();
 
 	_(repos).each(function(repo) {
 	    $http({
@@ -55,22 +109,35 @@ function OrgCtrl($scope, $http, $routeParams) {
 			    function(milestone) {
 				return milestone.repo.name == repo && milestone.number == event.issue.milestone.number;
 			    });
+
 			if(!milestone.eventsByIssue) 
                             milestone.eventsByIssue = [];
+
+                        //we use event.issue.number here because it is
+                        //unique per-issue
                         if(!milestone.eventsByIssue[event.issue.number])
                             milestone.eventsByIssue[event.issue.number] = [];
-
 			milestone.eventsByIssue[event.issue.number].push(event);
+
 		    });
 
-                _.chain($scope.milestones)
+                _($scope.milestones).chain()
                     .filter(function(m) { return m.repo.name == repo; })
                     .each(function(m) { 
                         m.event_summaries = summarizeEvents(m.eventsByIssue);
-                        return m;
-                    });
-	    });
-            
+                        var active_days = extractDays(_.flatten(m.eventsByIssue));
+                        m.past7_activity = _.map(_past7, function(momObj) {
+                            var dateIfActive = _.find(active_days, function(activeDay) {
+                                return activeDay.valueOf() == momObj.valueOf()
+                            });
+
+                            if(dateIfActive)
+                                return {date: momObj, value: true}
+                            else
+                                return {date: momObj, value: false}
+                        });
+                    });                
+	    });            
 	});		    
     };
 
@@ -91,16 +158,24 @@ function OrgCtrl($scope, $http, $routeParams) {
         });
     };
 
+    var extractDays = function(milestoneEvents) {
+         var days = _(milestoneEvents).chain().map(function(e) { 
+             return moment(e.created_at).milliseconds(0)
+                 .seconds(0).minutes(0).hours(0);
+         }).uniq(function(m) { return m.valueOf(); }).value();
+        return days;
+    };
+
     $scope.progress = function(milestone) {
 	return !milestone.open_issues ? milestone.open_issues : 
 	    (milestone.closed_issues / (milestone.closed_issues + milestone.open_issues)) * 100;
-    }
+    };
 
     $scope.stripBracketTags = function(string) {
 	if(!string) return;
 	out = string.slice(string.lastIndexOf("]")+1).trim(" ");
 	return out;
-    }
+    };
 
     $scope.parseBracketTags = function(string) {
 	var regex = /[\[](.+?)[\]]/g
@@ -109,11 +184,13 @@ function OrgCtrl($scope, $http, $routeParams) {
 	    out.push(res[1]);
 	}
 	return out;
-    }
+    };
 
     $scope.toggleDetails = function(ms) {
 	ms.showDetails = !ms.showDetails;
-    }
-	
+    };
+
+    $scope.testData = [{ "value": true }, { "value": false }, { "value": true },
+                       { "value": true }, { "value": false }, { "value": true }, { "value": true }];
 }
 
