@@ -182,7 +182,7 @@ function OrgCtrl($scope, $http, $routeParams) {
     
 
     var summarizeEvents = function(eventsByIssue) {        
-        return _(eventsByIssue).map(function(issueEvents) { 
+        return _(eventsByIssue).chain().map(function(issueEvents) { 
             var out = {};
             out.title = _(issueEvents).first().issue.title;
             out.url = _(issueEvents).first().issue.html_url;
@@ -195,7 +195,7 @@ function OrgCtrl($scope, $http, $routeParams) {
                 .uniq(function(u){ return u.login; })
                 .value();
             return out;
-        });
+        }).union([]).value(); //the union resets the array indexes
     };
 
     var extractDays = function(collection, date_field) {

@@ -29,6 +29,10 @@ body {
     top: 1px;
 }
 
+.days-left.overdue {
+    color: red;
+}
+
 .small {
     font-size: small;
 }

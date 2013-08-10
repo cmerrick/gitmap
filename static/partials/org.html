@@ -1,5 +1,5 @@
 <script type="text/ng-template" id="template-ms-short.html">
-  <div class="days-left" ng-show="milestone.due_on" >{{ milestone.due_on | daysFromNow }}</div>
+  <div class="days-left" ng-show="milestone.due_on" ng-class="{'overdue': (milestone.due_on | daysFromNow) < 0}" >{{ milestone.due_on | daysFromNow }}</div>
   <div class="milestone-progress">
     <progress percent="progress(milestone)"></progress>
     <span class="percent-label">{{ progress(milestone) | number:0 }}%</span>
@@ -14,7 +14,7 @@
     </span>
     <a href="{{ milestone.repo.html_url }}/issues?milestone={{ milestone.number }}">{{ stripBracketTags(milestone.title) }}</a>
   </div>
-  <div ng-show="milestone.showDetails" class="details">
+  <div ng-hide="true" class="details">
     <p class="ms-description-short">{{ milestone.description }}</p>
     <div class="events">
       <div class="event" ng-repeat="event in milestone.event_summaries | orderBy:'-last_modified' | limitTo:5 ">
@@ -37,12 +37,7 @@
   <li ng-show="milestonesLoaded" ng-click="toggleDetails(milestone)" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!!'} | orderBy:'due_on'">
     <div ng-include src="'template-ms-short.html'"></div>
   </li>
-</ul>
-
-<ul id="milestones-unscheduled" class="list-group milestone unscheduled">
-  <li class="list-group-item header">Unscheduled Milestones</li>
-  <div class="loading" ng-show="!milestonesLoaded">Loading...</div>
   <li ng-show="milestonesLoaded" href="" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!'} | orderBy:'due_on'">
     <div ng-include src="'template-ms-short.html'"></div>
   </li>
-</div>
+</ul>
