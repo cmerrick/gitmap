@@ -1,7 +1,10 @@
 import os, sys, requests, json, urlparse
 from hashlib import md5
+import datetime
 from flask import Flask, Response, request, render_template, redirect, session, url_for
+from dateutil import parser, tz
 
+utc_zone = tz.gettz('UTC')
 
 app = Flask(__name__)
 VERSION = 1 #hack for the cache buster
@@ -30,8 +33,9 @@ def p(s):
     print s
     sys.stdout.flush()
 
-def make_request(url):
-    return requests.get(url, params={ 'access_token': session['token'] })
+def make_request(url, params={}):
+    params = dict(params.items() + { 'access_token': session['token'] }.items())
+    return requests.get(url, params=params)
 
 def flattened(l):
     result = _flatten(l, lambda x: x)
@@ -90,7 +94,7 @@ def appRoot(p):
     return render_template('app.html')
 
 @app.route('/api/org/<orgname>/milestones.json')
-def milestones_json(orgname):
+def milestones(orgname):
     r = make_request('https://api.github.com/orgs/%s/repos' % orgname)
 
     def get_milestones(repo):
@@ -104,6 +108,27 @@ def milestones_json(orgname):
     return Response(json.dumps([m for m in milestones if len(m)]), mimetype="application/json")
 
 @app.route('/api/repos/<orgname>/<reponame>/issues/events.json')
-def milestone_json(orgname, reponame):
-    r = make_request('https://api.github.com/repos/{0}/{1}/issues/events'.format(orgname, reponame))
+def milestone_events(orgname, reponame):
+    last_date = None
+    since_time = datetime.datetime.now(utc_zone) - datetime.timedelta(days=7)
+    all_events = []
+    url = 'https://api.github.com/repos/{0}/{1}/issues/events'.format(orgname, reponame)
+    while(url != None and (last_date == None or last_date > since_time)):
+#        p("since_time: {0}, last_date: {1}".format(since_time, last_date))
+        r = make_request(url)
+        events = r.json()
+        all_events += events
+        last_date = parser.parse(events[-1]['created_at']).astimezone(utc_zone)
+        url = r.links['next']['url'] if 'next' in r.links else None
+
+    return Response(json.dumps(all_events), mimetype="application/json")
+
+@app.route('/api/repos/<orgname>/<reponame>/issues.json')
+def issues(orgname, reponame):
+    days_back = datetime.timedelta(days=7)
+    since_time = datetime.datetime.now() - days_back
+    since_param = since_time.isoformat()
+    
+    r = make_request('https://api.github.com/repos/{0}/{1}/issues'.format(orgname, reponame), 
+                     params={'sort': 'updated', 'since': since_param})
     return Response(json.dumps(r.json()), mimetype="application/json")

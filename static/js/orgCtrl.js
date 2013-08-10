@@ -58,9 +58,8 @@ var app = angular.module('gitmap', ['ui.bootstrap'])
                                 .attr("width", rectGrid.nodeSize()[0])
                                 .attr("height", rectGrid.nodeSize()[0])
                                 .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-                                .style("stroke-width", 1)
-                                .style("stroke", "black")
-                                .style("fill-opacity", function(d) { return d.value ? .5 : 0; });
+                                .style("stroke-width", 0)
+                            	.style("fill", function(d) { return d.value ? '#3a3' : '#eee'; });
                         };
                         
                         renderRect(svg.selectAll(".rect").data(rectGrid(nodeData)).enter(), "rect discussion");
@@ -81,6 +80,7 @@ function OrgCtrl($scope, $http, $routeParams) {
     while((_current = _current.add('d', 1)) < moment()) {
         _past7.push(moment(_current).milliseconds(0).seconds(0).minutes(0).hours(0));
     }
+    _past7.reverse(); //descending left-to-right
     
     $http({
 	method: 'GET',
@@ -96,50 +96,90 @@ function OrgCtrl($scope, $http, $routeParams) {
 	    .map(function(milestone) { return milestone && milestone.repo && milestone.repo.name; })
 	    .uniq()
 	    .compact();
-
 	_(repos).each(function(repo) {
 	    $http({
 		method: 'GET',
 		url: "/api/repos/" + $scope.orgname + "/" + repo + "/issues/events.json"
 	    }).success(function(data, status) {
-		_(data).chain()
-                    .filter(function(e) { return e.issue && e.issue.milestone; })
-                    .each(function(event) {
-			milestone = _($scope.milestones).find(
-			    function(milestone) {
-				return milestone.repo.name == repo && milestone.number == event.issue.milestone.number;
-			    });
-
-			if(!milestone.eventsByIssue) 
-                            milestone.eventsByIssue = [];
-
-                        //we use event.issue.number here because it is
-                        //unique per-issue
-                        if(!milestone.eventsByIssue[event.issue.number])
-                            milestone.eventsByIssue[event.issue.number] = [];
-			milestone.eventsByIssue[event.issue.number].push(event);
-
-		    });
-
-                _($scope.milestones).chain()
-                    .filter(function(m) { return m.repo.name == repo; })
-                    .each(function(m) { 
-                        m.event_summaries = summarizeEvents(m.eventsByIssue);
-                        var active_days = extractDays(_.flatten(m.eventsByIssue));
-                        m.past7_activity = _.map(_past7, function(momObj) {
-                            var dateIfActive = _.find(active_days, function(activeDay) {
-                                return activeDay.valueOf() == momObj.valueOf()
-                            });
-
-                            if(dateIfActive)
-                                return {date: momObj, value: true}
-                            else
-                                return {date: momObj, value: false}
-                        });
-                    });                
+                parseEventsData(data, repo);
 	    });            
 	});		    
     };
+
+    var parseIssuesData = function(data, repo) {
+	_(data).chain()
+            .filter(function(issue) { return issue.milestone; })
+            .each(function(issue) {
+		milestone = _($scope.milestones).find(
+		    function(milestone) {
+			return milestone.repo.name == repo && milestone.number == issue.milestone.number;
+		    });
+                
+		if(!milestone.issues) 
+                    milestone.issues = [];
+                
+                milestone.issues.push(issue);
+                
+	    });
+
+        _($scope.milestones).chain()
+            .filter(function(m) { return m.repo.name == repo; })
+            .each(function(m) { 
+                var active_days = extractDays(m.issues, 'updated_at');
+                m.past7_activity = _.map(_past7, function(momObj) {
+                    var dateIfActive = _.find(active_days, function(activeDay) {
+                        return activeDay.valueOf() == momObj.valueOf()
+                    });
+                    
+                    if(dateIfActive)
+                        return {date: momObj, value: true}
+                    else
+                        return {date: momObj, value: false}
+                });
+            });                
+
+        
+    };
+
+    //copied for safe-keeping
+    var parseEventsData = function(data, repo) {
+	_(data).chain()
+            .filter(function(e) { return e.issue && e.issue.milestone; })
+            .each(function(event) {
+		milestone = _($scope.milestones).find(
+		    function(milestone) {
+			return milestone.repo.name == repo && milestone.number == event.issue.milestone.number;
+		    });
+                
+		if(!milestone.eventsByIssue) 
+                    milestone.eventsByIssue = [];
+                
+                //we use event.issue.number here because it is
+                //unique per-issue
+                if(!milestone.eventsByIssue[event.issue.number])
+                    milestone.eventsByIssue[event.issue.number] = [];
+		milestone.eventsByIssue[event.issue.number].push(event);
+                
+	    });
+        
+        _($scope.milestones).chain()
+            .filter(function(m) { return m.repo.name == repo; })
+            .each(function(m) { 
+                m.event_summaries = summarizeEvents(m.eventsByIssue);
+                var active_days = extractDays(_.flatten(m.eventsByIssue), 'created_at');
+                m.past7_activity = _.map(_past7, function(momObj) {
+                    var dateIfActive = _.find(active_days, function(activeDay) {
+                        return activeDay.valueOf() == momObj.valueOf()
+                    });
+                    
+                    if(dateIfActive)
+                        return {date: momObj, value: true}
+                    else
+                        return {date: momObj, value: false}
+                });
+            });                
+    };
+    
 
     var summarizeEvents = function(eventsByIssue) {        
         return _(eventsByIssue).map(function(issueEvents) { 
@@ -158,9 +198,9 @@ function OrgCtrl($scope, $http, $routeParams) {
         });
     };
 
-    var extractDays = function(milestoneEvents) {
-         var days = _(milestoneEvents).chain().map(function(e) { 
-             return moment(e.created_at).milliseconds(0)
+    var extractDays = function(collection, date_field) {
+         var days = _(collection).chain().map(function(e) { 
+             return moment(e[date_field]).milliseconds(0)
                  .seconds(0).minutes(0).hours(0);
          }).uniq(function(m) { return m.valueOf(); }).value();
         return days;
