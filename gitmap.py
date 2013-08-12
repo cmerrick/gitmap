@@ -8,6 +8,16 @@ import datetime
 from flask import Flask, Response, request, render_template, redirect, session, url_for
 from dateutil import parser, tz
 
+def verify_env_var(var):
+    value = os.environ.get(var)
+    if value is None or len(value) == 0:
+        print >> sys.stderr, 'You must set the ' + var + ' environment variable'
+        exit(1)
+
+verify_env_var('SESSION_SECRET')
+verify_env_var('GH_CLIENT_KEY')
+verify_env_var('GH_CLIENT_SECRET')
+
 utc_zone = tz.gettz('UTC')
 
 app = Flask(__name__)
