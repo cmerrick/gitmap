@@ -1,4 +1,8 @@
-import os, sys, requests, json, urlparse
+#!venv/bin/python
+import os, sys
+import requests
+import json
+import urlparse
 from hashlib import md5
 import datetime
 from flask import Flask, Response, request, render_template, redirect, session, url_for
@@ -10,7 +14,6 @@ app = Flask(__name__)
 VERSION = 1 #hack for the cache buster
 app.config['DEBUG'] = True
 app.secret_key = os.environ['SESSION_SECRET']
-
 
 ASSET_REVISION = md5(str(VERSION)).hexdigest()[:14]
 
@@ -128,7 +131,10 @@ def issues(orgname, reponame):
     days_back = datetime.timedelta(days=7)
     since_time = datetime.datetime.now() - days_back
     since_param = since_time.isoformat()
-    
-    r = make_request('https://api.github.com/repos/{0}/{1}/issues'.format(orgname, reponame), 
+
+    r = make_request('https://api.github.com/repos/{0}/{1}/issues'.format(orgname, reponame),
                      params={'sort': 'updated', 'since': since_param})
     return Response(json.dumps(r.json()), mimetype="application/json")
+
+if __name__ == "__main__":
+    app.run()
