@@ -21,7 +21,7 @@ verify_env_var('GH_CLIENT_SECRET')
 utc_zone = tz.gettz('UTC')
 
 app = Flask(__name__)
-VERSION = 1 #hack for the cache buster
+VERSION = 2 #hack for the cache buster
 app.config['DEBUG'] = True
 app.secret_key = os.environ['SESSION_SECRET']
 

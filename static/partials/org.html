@@ -19,7 +19,7 @@
       <div class="event" ng-repeat="event in milestone.event_summaries | orderBy:'-last_modified' | limitTo:5 ">
 	<div class="time">{{ event.last_modified | momentFromNow }}
 	by [ <var ng-repeat="user in event.users">{{ user.login }} </var>]</div>
-	<span><a href="{{ event.url }}">{{ event.title }}</a></span>
+	<span><a href="{{ event.url }}" target="_blank">{{ event.title }}</a></span>
       </div>
     </div>
   </div>
