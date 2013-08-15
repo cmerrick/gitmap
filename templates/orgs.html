@@ -15,11 +15,16 @@
       <div class="header"></div>
       <div class="site">
 	<div class="container">
-	  <h1>gitmap.net</h1><h5><a class="pull-right" href="/logout">logout</a>
-	  <ul><h3>your organizations</h3>
+          <a class="pull-right" href="/logout">logout</a>
+	  <h1>gitmap.net</h1>
+	  <ul><h3>your organizations:</h3>
+            <ul>
 	    {% for org in orgs %}
 	      <li><h4><a href="/app/{{ org.login }}">{{ org.login }}</a></h4></li>
-	    {% endfor %}
+	    {% else %}
+              <h4>You don't belong to any organizations - gitmap is not for you!</h4>
+            {% endfor %}
+            </ul>
 	  </ul>
 	</div>
       </div>
