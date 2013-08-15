@@ -59,10 +59,22 @@ var app = angular.module('gitmap', ['ui.bootstrap'])
                                 .attr("height", rectGrid.nodeSize()[0])
                                 .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
                                 .style("stroke-width", 0)
-                            	.style("fill", function(d) { return d.value ? '#3a3' : '#eee'; });
+                            	.style("fill", function(d) { return d.value ? '#3a3' : '#eee'; })
+                                .attr("data-toggle", "tooltip")
+                                .attr("data-delay", 200)
+                                .attr("data-container", "body")
+                                .attr("title", function(d) { 
+                                    if(d.date.startOf('day').valueOf() === moment().startOf('day').valueOf())
+                                        return "today";
+                                    return d.date.startOf('day').from(moment().startOf('day')); 
+                                });
                         };
                         
-                        renderRect(svg.selectAll(".rect").data(rectGrid(nodeData)).enter(), "rect discussion");
+                        renderRect(svg.selectAll(".rect").data(rectGrid(nodeData)).enter(), "rect activity");
+                        _(svg.selectAll(".rect")).each(function(x) {
+                            $(x).tooltip();
+                        });
+
                     }
                 });
             }
@@ -87,6 +99,7 @@ function OrgCtrl($scope, $http, $routeParams) {
 	url: "/api/org/" + $scope.orgname + "/milestones.json"
     }).success(function(data, status) {
 	$scope.milestones = data;
+        $scope.org_avatar_url = data[0].repo.owner.avatar_url;
         $scope.milestonesLoaded = true;
 	$scope.getMilestoneEvents();
     });

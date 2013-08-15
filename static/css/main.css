@@ -122,3 +122,25 @@ body {
 .loading {
     margin: 5px;
 }
+
+.org-header {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.org-avatar {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    vertical-align: text-bottom;
+    margin-right: 5px;
+}
+
+.org-avatar img {
+    display: inline-block;
+    border-radius: 3px;
+}
+
+.org-title {
+    font-size: 24px;
+}

@@ -4,8 +4,7 @@
     <progress percent="progress(milestone)"></progress>
     <span class="percent-label">{{ progress(milestone) | number:0 }}%</span>
   </div>
-  <div class="milestone-activity" tooltip-placement="left" tooltip-popup-delay="200"
-       tooltip="today">
+  <div class="milestone-activity">
     <activity-grid nodes="milestone.past7_activity" />
   </div>
   <div class="title">
@@ -26,7 +25,12 @@
   </div>
 </script>
 
-<h3>{{ orgname }} Roadmap</h3>
+<div class="org-header">
+  <div class="org-avatar">
+    <img class="img-responsive" ng-show="org_avatar_url" src="{{ org_avatar_url }}" />
+  </div>
+  <span class="org-title">{{ orgname }} Roadmap</span>
+</div>
 <ul id="milestones-upcoming" class="list-group milestones scheduled">
   <li class="list-group-item header small">
     <div class="days-left small">days left</div>
