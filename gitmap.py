@@ -131,7 +131,8 @@ def milestone_events(orgname, reponame):
         r = make_request(url)
         events = r.json()
         all_events += events
-        last_date = parser.parse(events[-1]['created_at']).astimezone(utc_zone)
+        if len(events):
+            last_date = parser.parse(events[-1]['created_at']).astimezone(utc_zone)
         url = r.links['next']['url'] if 'next' in r.links else None
 
     return Response(json.dumps(all_events), mimetype="application/json")
