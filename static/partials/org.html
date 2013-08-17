@@ -31,13 +31,17 @@
   </div>
   <span class="org-title">{{ orgname }} Roadmap</span>
 </div>
-<ul id="milestones-upcoming" class="list-group milestones scheduled">
+  <div class="loading" ng-show="!milestonesLoaded">Loading...</div>
+  <div ng-show="milestonesLoaded && !milestones.length">
+    We are trying to build a roadmap out of your repository
+    milestones, but there are none!
+  </div>
+<ul id="milestones-upcoming" ng-show="milestonesLoaded && milestones.length" class="list-group milestones scheduled">
   <li class="list-group-item header small">
     <div class="days-left small">days left</div>
     <div class="milestone-progress small">progress</div>
     <div class="milestone-activity small">7d activity</div>
   </li>
-  <div class="loading" ng-show="!milestonesLoaded">Loading...</div>
   <li ng-show="milestonesLoaded" ng-click="toggleDetails(milestone)" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!!'} | orderBy:'due_on'">
     <div ng-include src="'template-ms-short.html'"></div>
   </li>

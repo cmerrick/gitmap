@@ -100,9 +100,11 @@ function OrgCtrl($scope, $http, $routeParams) {
 	url: "/api/org/" + $scope.orgname + "/milestones.json"
     }).success(function(data, status) {
 	$scope.milestones = data;
-        $scope.org_avatar_url = data[0].repo.owner.avatar_url;
         $scope.milestonesLoaded = true;
-	$scope.getMilestoneEvents();
+        if (data[0]) {
+            $scope.org_avatar_url = data[0].repo.owner.avatar_url;
+	    $scope.getMilestoneEvents();
+        }
     });
 
     $scope.getMilestoneEvents = function() {
