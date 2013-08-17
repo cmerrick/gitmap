@@ -113,7 +113,6 @@ function OrgCtrl($scope, $http, $routeParams) {
 	_(repos).each(function(repo) {
             getAllPages("/api/q?q=/repos/" + $scope.orgname + "/" + repo + "/issues/events")
                 .then(function(d) {
-                    console.log(d);
                     parseEventsData(d, repo);
                 });
 	});		    
