@@ -46,6 +46,25 @@ def p(s):
     print s
     sys.stdout.flush()
 
+@app.route("/api/q")
+def q():
+    wrap_headers = ["X-GitHub-Media-Type", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Link"]
+    q = request.args.get('q').lower()
+    prefix = "https://api.github.com"
+    if q.startswith(prefix):
+        url = q
+    else:
+        url = "https://api.github.com" + q
+
+    r = make_request(url)
+
+    headers = {}
+    for k in wrap_headers:
+        if k in r.headers:
+            headers[k] = r.headers[k]
+        
+    return Response(r, headers=headers.iteritems())
+
 def make_request(url, params={}):
     params = dict(params.items() + { 'access_token': session['token'] }.items())
     return requests.get(url, params=params)

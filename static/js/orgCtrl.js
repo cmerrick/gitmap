@@ -88,6 +88,7 @@ function OrgCtrl($scope, $http, $routeParams) {
     $scope.eventsByIssue = [];
 
     var _past7 = [];
+    var _event_lookback = moment().subtract('d', 7);
     var _current = moment().subtract('d', 7);
     while((_current = _current.add('d', 1)) < moment()) {
         _past7.push(moment(_current).milliseconds(0).seconds(0).minutes(0).hours(0));
@@ -110,13 +111,36 @@ function OrgCtrl($scope, $http, $routeParams) {
 	    .uniq()
 	    .compact();
 	_(repos).each(function(repo) {
-	    $http({
-		method: 'GET',
-		url: "/api/repos/" + $scope.orgname + "/" + repo + "/issues/events.json"
-	    }).success(function(data, status) {
-                parseEventsData(data, repo);
-	    });            
+            getAllPages("/api/q?q=/repos/" + $scope.orgname + "/" + repo + "/issues/events")
+                .then(function(d) {
+                    console.log(d);
+                    parseEventsData(d, repo);
+                });
 	});		    
+    };
+
+    var getAllPages = function(url, all_data) {
+        if(!all_data)
+            all_data = []
+
+        return $http.get(url).then(function(response) {
+            all_data = all_data.concat(response.data);
+            
+            var next_url;
+            
+            if (response.headers()['link']) {
+                var links = parseLinkHeader(response.headers()['link']);
+                if(links.rels.next)
+                    next_url = "/api/q?q=" + encodeURIComponent(links.rels.next.href);
+            }
+
+            last_date = moment(response.data[response.data.length - 1].created_at)
+            if(next_url && last_date.valueOf() > _event_lookback.valueOf()) {
+                return getAllPages(next_url, all_data);
+            } else {
+                return all_data;
+            }
+        });
     };
 
     var parseIssuesData = function(data, repo) {
@@ -163,16 +187,18 @@ function OrgCtrl($scope, $http, $routeParams) {
 		    function(milestone) {
 			return milestone.repo.name == repo && milestone.number == event.issue.milestone.number;
 		    });
-                
-		if(!milestone.eventsByIssue) 
-                    milestone.eventsByIssue = [];
-                
-                //we use event.issue.number here because it is
-                //unique per-issue
-                if(!milestone.eventsByIssue[event.issue.number])
-                    milestone.eventsByIssue[event.issue.number] = [];
-		milestone.eventsByIssue[event.issue.number].push(event);
-                
+
+                if(milestone) { //milestone could already be closed
+                    //and therefore not in our list
+		    if(!milestone.eventsByIssue) 
+                        milestone.eventsByIssue = [];
+                    
+                    //we use event.issue.number here because it is
+                    //unique per-issue
+                    if(!milestone.eventsByIssue[event.issue.number])
+                        milestone.eventsByIssue[event.issue.number] = [];
+		    milestone.eventsByIssue[event.issue.number].push(event);
+                }   
 	    });
         
         _($scope.milestones).chain()
