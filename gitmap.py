@@ -133,6 +133,7 @@ def milestones(orgname):
 
     def get_milestones(repo):
         r = make_request(repo['milestones_url'].split('{')[0])
+        p(repo['milestones_url'])
         p(r.text)
         out = r.json();
         p(out)
