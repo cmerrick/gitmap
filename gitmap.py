@@ -66,6 +66,7 @@ def q():
     return Response(r, headers=headers.iteritems())
 
 def make_request(url, params={}):
+    p(session)
     params = dict(params.items() + { 'access_token': session['token'] }.items())
     return requests.get(url, params=params)
 
@@ -113,6 +114,7 @@ def auth():
 def auth_callback():
     access_url = gh_access_token_url.format(request.args.get('code', ''))
     r = requests.post(access_url)
+    p(r.text)
     session['token'] = urlparse.parse_qs(r.text)['access_token']
     return org_redirect()
 
