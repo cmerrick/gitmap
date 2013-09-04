@@ -66,7 +66,6 @@ def q():
     return Response(r, headers=headers.iteritems())
 
 def make_request(url, params={}):
-    p(session)
     params = dict(params.items() + { 'access_token': session['token'] }.items())
     return requests.get(url, params=params)
 
@@ -114,7 +113,6 @@ def auth():
 def auth_callback():
     access_url = gh_access_token_url.format(request.args.get('code', ''))
     r = requests.post(access_url)
-    p(r.text)
     session['token'] = urlparse.parse_qs(r.text)['access_token']
     return org_redirect()
 
@@ -133,11 +131,12 @@ def milestones(orgname):
 
     def get_milestones(repo):
         r = make_request(repo['milestones_url'].split('{')[0])
-        p(repo['milestones_url'])
-        p(r.status_code)
-        p(r.text)
-        out = r.json();
-        p(out)
+
+        if r.status_code == 200:
+            out = r.json();
+        else:
+            out = []
+
         for ms in out:
             ms['repo'] = repo
         return out
