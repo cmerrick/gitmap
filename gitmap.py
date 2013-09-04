@@ -133,7 +133,9 @@ def milestones(orgname):
 
     def get_milestones(repo):
         r = make_request(repo['milestones_url'].split('{')[0])
+        p(r.text)
         out = r.json();
+        p(out)
         for ms in out:
             ms['repo'] = repo
         return out
