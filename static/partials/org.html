@@ -11,7 +11,7 @@
     <span class="badge tag" ng-repeat="tag in parseBracketTags(milestone.title)">
       {{tag}}
     </span>
-    <a href="{{ milestone.repo.html_url }}/issues?milestone={{ milestone.number }}">{{ stripBracketTags(milestone.title) }}</a>
+    <a href="{{ milestone.repo.html_url }}/issues?milestone={{ milestone.number }}" target="_blank">{{ stripBracketTags(milestone.title) }}</a>
   </div>
   <div ng-hide="true" class="details">
     <p class="ms-description-short">{{ milestone.description }}</p>
