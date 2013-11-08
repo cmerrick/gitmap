@@ -131,7 +131,12 @@ def milestones(orgname):
 
     def get_milestones(repo):
         r = make_request(repo['milestones_url'].split('{')[0])
-        out = r.json();
+
+        if r.status_code == 200:
+            out = r.json();
+        else:
+            out = []
+
         for ms in out:
             ms['repo'] = repo
         return out
