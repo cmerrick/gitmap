@@ -34,7 +34,7 @@ var app = angular.module('gitmap', ['ui.bootstrap'])
                     if(nodes) {
                         var nodeData = scope.nodes;
                         var selector = elem[0];
-                        
+
                         var width = 150,
                 	height = 30,
                 	padding = .2;
@@ -45,13 +45,13 @@ var app = angular.module('gitmap', ['ui.bootstrap'])
                             .padding([padding, padding])
                             .rows(1)
                             .cols(7);
-                        
+
                         var svg = d3.select(selector).append("svg")
                             .attr({
                                 width: width,
                                 height: height
                             });
-                        
+
                         var renderRect = function(rectSelector, classNames) {
                             rectSelector.append("rect")
                                 .attr("class", classNames)
@@ -63,13 +63,13 @@ var app = angular.module('gitmap', ['ui.bootstrap'])
                                 .attr("data-toggle", "tooltip")
                                 .attr("data-delay", 200)
                                 .attr("data-container", "body")
-                                .attr("title", function(d) { 
+                                .attr("title", function(d) {
                                     if(d.date.startOf('day').valueOf() === moment().startOf('day').valueOf())
                                         return "today";
-                                    return d.date.startOf('day').from(moment().startOf('day')); 
+                                    return d.date.startOf('day').from(moment().startOf('day'));
                                 });
                         };
-                        
+
                         renderRect(svg.selectAll(".rect").data(rectGrid(nodeData)).enter(), "rect activity");
                         _(svg.selectAll(".rect")).each(function(x) {
                             $(x).tooltip();
@@ -94,13 +94,19 @@ function OrgCtrl($scope, $http, $routeParams) {
         _past7.push(moment(_current).milliseconds(0).seconds(0).minutes(0).hours(0));
     }
     _past7.reverse(); //descending left-to-right
-    
+
     $http({
 	method: 'GET',
 	url: "/api/org/" + $scope.orgname + "/milestones.json"
     }).success(function(data, status) {
 	$scope.milestones = data;
         $scope.milestonesLoaded = true;
+        _($scope.milestones).each(function(ms) {
+            ms.tags = parseBracketTags(ms.title);
+            ms.fullTitle = ms.title;
+            ms.title = stripBracketTags(ms.title);
+            $scope.allTags = _($scope.allTags).union(ms.tags);
+        });
         if (data[0]) {
             $scope.org_avatar_url = data[0].repo.owner.avatar_url;
 	    $scope.getMilestoneEvents();
@@ -117,7 +123,7 @@ function OrgCtrl($scope, $http, $routeParams) {
                 .then(function(d) {
                     parseEventsData(d, repo);
                 });
-	});		    
+	});
     };
 
     var getAllPages = function(url, all_data) {
@@ -126,9 +132,9 @@ function OrgCtrl($scope, $http, $routeParams) {
 
         return $http.get(url).then(function(response) {
             all_data = all_data.concat(response.data);
-            
+
             var next_url;
-            
+
             if (response.headers()['link']) {
                 var links = parseLinkHeader(response.headers()['link']);
                 if(links.rels.next)
@@ -152,31 +158,31 @@ function OrgCtrl($scope, $http, $routeParams) {
 		    function(milestone) {
 			return milestone.repo.name == repo && milestone.number == issue.milestone.number;
 		    });
-                
-		if(!milestone.issues) 
+
+		if(!milestone.issues)
                     milestone.issues = [];
-                
+
                 milestone.issues.push(issue);
-                
+
 	    });
 
         _($scope.milestones).chain()
             .filter(function(m) { return m.repo.name == repo; })
-            .each(function(m) { 
+            .each(function(m) {
                 var active_days = extractDays(m.issues, 'updated_at');
                 m.past7_activity = _.map(_past7, function(momObj) {
                     var dateIfActive = _.find(active_days, function(activeDay) {
                         return activeDay.valueOf() == momObj.valueOf()
                     });
-                    
+
                     if(dateIfActive)
                         return {date: momObj, value: true}
                     else
                         return {date: momObj, value: false}
                 });
-            });                
+            });
 
-        
+
     };
 
     //copied for safe-keeping
@@ -191,38 +197,37 @@ function OrgCtrl($scope, $http, $routeParams) {
 
                 if(milestone) { //milestone could already be closed
                     //and therefore not in our list
-		    if(!milestone.eventsByIssue) 
+		    if(!milestone.eventsByIssue)
                         milestone.eventsByIssue = [];
-                    
+
                     //we use event.issue.number here because it is
                     //unique per-issue
                     if(!milestone.eventsByIssue[event.issue.number])
                         milestone.eventsByIssue[event.issue.number] = [];
 		    milestone.eventsByIssue[event.issue.number].push(event);
-                }   
+                }
 	    });
-        
+
         _($scope.milestones).chain()
             .filter(function(m) { return m.repo.name == repo; })
-            .each(function(m) { 
+            .each(function(m) {
                 m.event_summaries = summarizeEvents(m.eventsByIssue);
                 var active_days = extractDays(_.flatten(m.eventsByIssue), 'created_at');
                 m.past7_activity = _.map(_past7, function(momObj) {
                     var dateIfActive = _.find(active_days, function(activeDay) {
                         return activeDay.valueOf() == momObj.valueOf()
                     });
-                    
+
                     if(dateIfActive)
                         return {date: momObj, value: true}
                     else
                         return {date: momObj, value: false}
                 });
-            });                
+            });
     };
-    
 
-    var summarizeEvents = function(eventsByIssue) {        
-        return _(eventsByIssue).chain().map(function(issueEvents) { 
+    var summarizeEvents = function(eventsByIssue) {
+        return _(eventsByIssue).chain().map(function(issueEvents) {
             var out = {};
             out.title = _(issueEvents).first().issue.title;
             out.url = _(issueEvents).first().issue.html_url;
@@ -239,25 +244,20 @@ function OrgCtrl($scope, $http, $routeParams) {
     };
 
     var extractDays = function(collection, date_field) {
-         var days = _(collection).chain().map(function(e) { 
+         var days = _(collection).chain().map(function(e) {
              return moment(e[date_field]).milliseconds(0)
                  .seconds(0).minutes(0).hours(0);
          }).uniq(function(m) { return m.valueOf(); }).value();
         return days;
     };
 
-    $scope.progress = function(milestone) {
-	return !milestone.open_issues ? milestone.open_issues : 
-	    (milestone.closed_issues / (milestone.closed_issues + milestone.open_issues)) * 100;
-    };
-
-    $scope.stripBracketTags = function(string) {
+    var stripBracketTags = function(string) {
 	if(!string) return;
 	out = string.slice(string.lastIndexOf("]")+1).trim(" ");
 	return out;
     };
 
-    $scope.parseBracketTags = function(string) {
+    var parseBracketTags = function(string) {
 	var regex = /[\[](.+?)[\]]/g
 	var out = [];
 	while(res = regex.exec(string)) {
@@ -266,6 +266,27 @@ function OrgCtrl($scope, $http, $routeParams) {
 	return out;
     };
 
+    $scope.progress = function(milestone) {
+	return !milestone.open_issues ? milestone.open_issues :
+	    (milestone.closed_issues / (milestone.closed_issues + milestone.open_issues)) * 100;
+    };
+
+    $scope.allTags = [];
+
+    $scope.tagsFilter = function (obj) {
+        return $scope.filteredTags.length ? _.intersection(obj.tags, $scope.filteredTags).length : true;
+    };
+
+    $scope.toggleTagFilter = function(t) {
+        if (_($scope.filteredTags).contains(t)) {
+            $scope.filteredTags = _($scope.filteredTags).without(t);
+        } else {
+            $scope.filteredTags.push(t);
+        }
+    };
+
+    $scope.filteredTags = [];
+
     $scope.toggleDetails = function(ms) {
 	ms.showDetails = !ms.showDetails;
     };
@@ -273,4 +294,3 @@ function OrgCtrl($scope, $http, $routeParams) {
     $scope.testData = [{ "value": true }, { "value": false }, { "value": true },
                        { "value": true }, { "value": false }, { "value": true }, { "value": true }];
 }
-

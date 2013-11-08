@@ -8,10 +8,10 @@
     <activity-grid nodes="milestone.past7_activity" />
   </div>
   <div class="title">
-    <span class="badge tag" ng-repeat="tag in parseBracketTags(milestone.title)">
+    <span class="badge tag" ng-repeat="tag in milestone.tags">
       {{tag}}
     </span>
-    <a href="{{ milestone.repo.html_url }}/issues?milestone={{ milestone.number }}" target="_blank">{{ stripBracketTags(milestone.title) }}</a>
+    <a href="{{ milestone.repo.html_url }}/issues?milestone={{ milestone.number }}" target="_blank">{{ milestone.title }}</a>
   </div>
   <div ng-hide="true" class="details">
     <p class="ms-description-short">{{ milestone.description }}</p>
@@ -31,21 +31,27 @@
   </div>
   <span class="org-title">{{ orgname }} Roadmap</span>
 </div>
-  <div class="loading" ng-show="!milestonesLoaded">Loading...</div>
-  <div ng-show="milestonesLoaded && !milestones.length">
-    We are trying to build a roadmap out of your repository
-    milestones, but there are none!
-  </div>
+<div class="loading" ng-show="!milestonesLoaded">Loading...</div>
+<div ng-show="milestonesLoaded && !milestones.length">
+  We are trying to build a roadmap out of your repository
+  milestones, but there are none!
+</div>
+<div class="tag-header" ng-show="milestonesLoaded && milestones.length">
+  Tags:
+  <span class="badge tag filter" ng-repeat="tag in allTags" ng-click="toggleTagFilter(tag)" ng-class="{'active': filteredTags.indexOf(tag) != -1}">
+    {{tag}}
+  </span>
+</div>
 <ul id="milestones-upcoming" ng-show="milestonesLoaded && milestones.length" class="list-group milestones scheduled">
   <li class="list-group-item header small">
     <div class="days-left small">days left</div>
     <div class="milestone-progress small">progress</div>
     <div class="milestone-activity small">7d activity</div>
   </li>
-  <li ng-show="milestonesLoaded" ng-click="toggleDetails(milestone)" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!!'} | orderBy:'due_on'">
+  <li ng-show="milestonesLoaded" ng-click="toggleDetails(milestone)" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!!'} | filter:tagsFilter | orderBy:'due_on'">
     <div ng-include src="'template-ms-short.html'"></div>
   </li>
-  <li ng-show="milestonesLoaded" href="" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!'} | orderBy:'due_on'">
+  <li ng-show="milestonesLoaded" href="" class="list-group-item milestone-list-item" ng-repeat="milestone in milestones | filter:{due_on:'!'} | filter:tagsFilter | orderBy:'due_on'">
     <div ng-include src="'template-ms-short.html'"></div>
   </li>
 </ul>

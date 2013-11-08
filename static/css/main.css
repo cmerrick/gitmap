@@ -77,8 +77,16 @@ body {
     font-size: 12px;
 }
 
-.milestone-list-item .badge.tag {
+.badge.tag {
     margin-right: 2px;
+}
+
+.badge.tag.filter {
+    cursor: pointer;
+}
+
+.badge.tag.filter.active {
+    background-color: #22f;
 }
 
 .milestone-list-item .details {
@@ -126,6 +134,11 @@ body {
 .org-header {
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.tag-header {
+    margin-bottom:3px;
+    text-align: right;
 }
 
 .org-avatar {
