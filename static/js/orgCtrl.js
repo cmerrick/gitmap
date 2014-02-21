@@ -1,7 +1,7 @@
 var app = angular.module('gitmap', ['ui.bootstrap'])
     .config(['$routeProvider', function($routeProvider) {
 	$routeProvider
-	.when('/:orgname', { templateUrl: '/static/partials/org.html', controller: OrgCtrl })
+	.when('/:orgname', { templateUrl: '/static/partials/org.html', controller: OrgCtrl, reloadOnSearch: false })
 	.otherwise({ redirectTo: '/' });
 	}])
     .config(['$locationProvider', function($locationProvider) { $locationProvider.html5Mode(true).hashPrefix('!'); }])
@@ -81,7 +81,7 @@ var app = angular.module('gitmap', ['ui.bootstrap'])
         }
     });
 
-function OrgCtrl($scope, $http, $routeParams) {
+function OrgCtrl($scope, $http, $routeParams, $location) {
     $scope.milestones = [];
     $scope.milestonesLoaded = false;
     $scope.orgname = $routeParams.orgname;
@@ -286,6 +286,13 @@ function OrgCtrl($scope, $http, $routeParams) {
     };
 
     $scope.filteredTags = [];
+
+    if ($routeParams.tags !== undefined)
+      _.map($routeParams.tags.split(','), $scope.toggleTagFilter);
+
+    $scope.$watch('filteredTags', function (tags) {
+      $location.search('tags', tags.join(','));
+    }, true);
 
     $scope.toggleDetails = function(ms) {
 	ms.showDetails = !ms.showDetails;
